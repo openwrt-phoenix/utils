@@ -59,6 +59,7 @@ fi
 [ -f $dir ] && rm -f $dir
 [ -d $dir ] || mkdir $dir
 [ -f openwrt/Makefile ] || exit 1 
+ln -sf ../../feeds openwrt/package/
 ln -sf ../openwrt/Makefile $dir/
 ln -sf ../openwrt/rules.mk $dir/
 ln -sf ../openwrt/Config.in $dir/
