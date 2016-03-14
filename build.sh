@@ -12,7 +12,7 @@ if [ `ps --no-headers -oppid -p$$` -gt 1 ]; then
     if [ `ps --no-headers -ocomm -p$ppid` != $name ];then
         $0 $@ 
         sleep 1
-        tail --pid=`fuser ${name%%.*}.log 2>&1 | awk -F\  '{print $2}'` -f ${name%%.*}.log
+        tail --pid=`fuser .${name%%.*}.log 2>&1 | awk -F\  '{print $2}'` -f .${name%%.*}.log
         exit 0
     else
         exec 0</dev/null
