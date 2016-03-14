@@ -74,15 +74,6 @@ ln -sf ../openwrt/package $dir/
 [ -n "$cf" ] && [ ! -f "$cf" ] && echo "File [ $cf ] not exists!" && exit 1
 [ -n "$cf" ] && [ -f "$cf" ] && cp $cf $dir/.config
 [ ! -f $dir/.config ] && echo "File [ .config ] not exists!" && exit 1
-sed -e '/CONFIG_\(BINARYi\|DOWNLOAD\)_FOLDER/d' \
-    -e '/CONFIG_LOCALMIRROR/d' \
-    -e '/CONFIG_BUILD_LOG/d' -i $dir/.config
-cat >>$dir/.config <<EOF
-CONFIG_BINARY_FOLDER="\$(TOPDIR)/release/\$(BOARD)"
-CONFIG_DOWNLOAD_FOLDER="\$(TOPDIR)/download"
-CONFIG_LOCALMIRROR="http://192.168.19.197/openwrt/download.php"
-CONFIG_BUILD_LOG=y
-EOF
 mkdir -p $dir/tmp
 find $dir/tmp -maxdepth 1 -name 'debug-*.txt' -delete
 export PATH=$PWD/utils:$PATH
