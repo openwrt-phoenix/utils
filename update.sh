@@ -180,7 +180,7 @@ trans_commit()
     local _openwrt_14_07_routing=ba11f8d
     local _openwrt_14_07_oldpackages=1b9848d
     local _openwrt_14_07_newpackages=bdcbb26
-    local _openwrt_14_07_utils=6bb8dbd
+    local _openwrt_14_07_utils=ede919d
     local _openwrt_15_05_openwrt=6c9b1a2
     local _openwrt_15_05_packages=f55314d
     local _openwrt_15_05_luci=e11b5e4
