@@ -2,17 +2,26 @@
 
 drop_shell()
 {
-    local o=$1
-    syslog "==need merge: "
-    if /bin/bash; then
-        syslog "==seems ok, try commit!"
-        call_git commit
-    else
-        syslog "==seems fail, rollback!"
-        call_git reset --hard
-        call_git checkout $o
-        exit 0
+    if call_git status | grep -q conflicts; then
+        syslog "==fix conflicts: "
+        PS1='fix conflicts \s-\v\$ ' /bin/bash
+        if call_git status | grep -q 'All conflicts fixed'; then
+            syslog "==seems ok, try commit!"
+            if call_git commit; then
+                return 0
+            else
+                syslog "commit fail, rollback!"
+            fi
+        elif call_git status | grep -q 'working directory clean';then
+            syslog "==seems ok, is committed?"
+            return 0
+        else
+            syslog "==seems fail, rollback!"
+        fi
     fi
+    call_git reset --hard
+    call_git checkout $1
+    exit 1
 }
 
 
@@ -287,7 +296,7 @@ utils_init()
         _subtree=`trans_subtree $_remote`
         [ -d "$_subtree" ] && syslog "subtree $_subtree is exists!" && exit 1
         set_remote $_remote
-        call_git fetch -n `trans_remote $_remote`
+        call_git fetch -n `trans_remote $_remote` || return 1
     done
     echo "------------------------------------------------------"
     _venders=$vender
@@ -305,9 +314,9 @@ utils_init()
                 _subtree=`trans_subtree $_remote`
                 _commit=`trans_commit $_vender $_branch $_remote`
                 if [ -d "$_subtree" ];then
-                    call_git subtree merge --squash --prefix=$_subtree $_commit
+                    call_git subtree merge --squash --prefix=$_subtree $_commit || return 1
                 else
-                    call_git subtree add --squash --prefix=$_subtree $_commit
+                    call_git subtree add --squash --prefix=$_subtree $_commit || return 1
                 fi
                 sleep 1
             done
