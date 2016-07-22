@@ -313,8 +313,10 @@ utils_init()
                 echo "------------------------------------------------------"
                 _subtree=`trans_subtree $_remote`
                 _commit=`trans_commit $_vender $_branch $_remote`
+                export subtree=$_subtree
                 if [ -d "$_subtree" ];then
                     call_git subtree merge --squash --prefix=$_subtree $_commit || return 1
+                    call_git commit --amend
                 else
                     call_git subtree add --squash --prefix=$_subtree $_commit || return 1
                 fi
@@ -343,21 +345,23 @@ utils_update()
         for _branch in $_branchs
         do
             call_git checkout $_vender-$_branch
-            call_git branch | grep -v '.*-master' | grep -q master && call_git branch -D master
-            call_git checkout $_vender-$_branch -b master
+            #call_git branch | grep -v '.*-master' | grep -q master && call_git branch -D master
+            #call_git checkout $_vender-$_branch -b master
             for _remote in $remotes
             do
                 echo "------------------------------------------------------"
                 _subtree=`trans_subtree $_remote`
                 _branch2=`trans_branch2 $_remote $_branch`
                 _remote2=`trans_remote $_remote`
+                export subtree=$_subtree
                 set_remote $_remote
                 call_git subtree pull --squash --prefix=$_subtree $_remote2 $_branch2 || drop_shell $_vender-$_branch
+                call_git commit --amend
             done
             echo "------------------------------------------------------"
-            call_git checkout $_vender-$_branch
-            call_git merge master
-            call_git branch -D master
+            #call_git checkout $_vender-$_branch
+            #call_git merge master
+            #call_git branch -D master
             echo "======================================================"
         done
     done
@@ -391,7 +395,7 @@ syslog()
 #------------------------------------------------------
 
 export LANG=en_US.UTF-8
-export EDITOR=:
+export EDITOR="sed -i \"s@\(Merge commit '[a-f0-9]*'\).*@\1 as '\$subtree'@\""
 
 curdir=`pwd`
 basedir=`dirname $0`
