@@ -274,7 +274,7 @@ utils_clean()
 
 utils_init()
 {
-    local _vender _venders _remote _branch _branch2 _branchs _subtree _commit
+   local _vender _venders _remote _branch _branch2 _branchs _subtree _commit _id1 _id2
     mkdir -p $destdir
     [ -d "$destdir" -a -n "$force" ] && find $destdir -maxdepth 1 -mindepth 1 |xargs rm -rf 
     cd $destdir
@@ -314,9 +314,11 @@ utils_init()
                 _subtree=`trans_subtree $_remote`
                 _commit=`trans_commit $_vender $_branch $_remote`
                 export subtree=$_subtree
+                _id1=`call_git log --pretty=%H  -n 1`
                 if [ -d "$_subtree" ];then
                     call_git subtree merge --squash --prefix=$_subtree $_commit || return 1
-                    call_git commit --amend
+                    _id2=`call_git log --pretty=%H  -n 1`
+                    [ "$_id1" == "$_id2" ] || call_git commit --amend
                 else
                     call_git subtree add --squash --prefix=$_subtree $_commit || return 1
                 fi
@@ -333,7 +335,7 @@ utils_init()
 
 utils_update()
 {
-    local _vender _venders _remote _remote2 _branch _branch2 _branchs _subtree
+    local _vender _venders _remote _remote2 _branch _branch2 _branchs _subtree _id1 _id2
     [ -d "$destdir" -a -d "$destdir/.git" ] || return 0
     cd $destdir
     _venders=$vender
@@ -355,8 +357,10 @@ utils_update()
                 _remote2=`trans_remote $_remote`
                 export subtree=$_subtree
                 set_remote $_remote
+                _id1=`call_git log --pretty=%H  -n 1`
                 call_git subtree pull --squash --prefix=$_subtree $_remote2 $_branch2 || drop_shell $_vender-$_branch
-                call_git commit --amend
+                _id2=`call_git log --pretty=%H  -n 1`
+                [ "$_id1" == "$_id2" ] || call_git commit --amend
             done
             echo "------------------------------------------------------"
             #call_git checkout $_vender-$_branch
