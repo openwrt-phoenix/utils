@@ -1,6 +1,6 @@
 #!/bin/sh
 
-for name in openwrt/package feeds/{packages,routing,oldpackages}
+for name in openwrt/package feeds/{luci,packages,routing,newpackages,oldpackages}
 do
     find $name -name 'Makefile' | sed -e '/\/files\/\|\/src\//d' -e 's/\/Makefile$//' | sort >path.txt
     sed -e 's/.*\///' path.txt >>list.txt
