@@ -138,7 +138,6 @@ trans_vender()
 trans_mirror()
 {
     local url
-    [ "$1" == "lede" ] &&        url=$mirror/github.com/lede-project/source.git
     [ "$1" == "openwrt" ] &&     url=$mirror/github.com/openwrt/openwrt.git
     [ "$1" == "packages" ] &&    url=$mirror/github.com/openwrt/packages.git
     [ "$1" == "luci" ] &&        url=$mirror/github.com/openwrt/luci.git
@@ -146,6 +145,8 @@ trans_mirror()
     [ "$1" == "oldpackages" ] && url=$mirror/git.openwrt.org/packages.git
     [ "$1" == "newpackages" ] && url=$mirror/github.com/openwrt-phoenix/newpackages.git
     [ "$1" == "utils" ] &&       url=$mirror/github.com/openwrt-phoenix/utils.git
+    [ "$1" == "lede" ] &&        url=$mirror/github.com/lede-project/source.git
+    [ "$1" == "openwrt" -a "$2" == "lede" ] && url=$mirror/github.com/lede-project/source.git
     echo -n $url
 }
 
@@ -354,9 +355,9 @@ utils_update()
                 echo "------------------------------------------------------"
                 _subtree=`trans_subtree $_remote`
                 _branch2=`trans_branch2 $_remote $_branch`
-                _remote2=`trans_remote $_remote`
+                _remote2=`trans_remote $_remote $_vender`
                 export subtree=$_subtree
-                set_remote $_remote
+                set_remote $_remote $_vender
                 _id1=`call_git log --pretty=%H  -n 1`
                 call_git subtree pull --squash --prefix=$_subtree $_remote2 $_branch2 || drop_shell $_vender-$_branch
                 _id2=`call_git log --pretty=%H  -n 1`
@@ -374,8 +375,8 @@ utils_update()
 
 set_remote()
 {
-    local _remote=`trans_remote $1`
-    local _url=`trans_mirror $1`
+    local _remote=`trans_remote $1 $2`
+    local _url=`trans_mirror $1 $2`
     if git remote | grep -q "^$_remote$"; then
         if [ -n "$force" ]; then
             call_git remote remove $_remote
