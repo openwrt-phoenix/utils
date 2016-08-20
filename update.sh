@@ -196,6 +196,25 @@ trans_commit()
     echo -n $o  
 }
 
+main_help()
+{
+    echo -e "$0:"
+    echo -e "\t-c\tremove branches, remotes and subtree"
+    echo -e "\t-f\tremote repo(with -i), remotes(with -u)"
+    echo -e "\t-i\tinit repo"
+    echo -e "\t-q\tprint less message"
+    echo -e "\t-r\tnot use"
+    echo -e "\t-u\tupdate repo"
+    echo -e "\t-x\tset to debug mode"
+    echo -e "\t-b foo\tbranch to update"
+    echo -e "\t-d foo\tpath to repo"
+    echo -e "\t-m foo\tgit repo mirror"
+    echo -e "\t-v foo\tthe vender of branch"
+    echo -e "examples:"
+    echo -e "\t$0 -i -q -d xxx"
+    echo -e "\t$0 -u -q -d xxx -b foo -v bar"
+}
+
 main_init()
 {
     # initialize
@@ -233,11 +252,11 @@ main_init()
             v)
                 vender=$OPTARG;;
             :)
-                syslog "option '-$OPTARG' need a argument.";exit 1;;
+                syslog "option '-$OPTARG' need a argument.";main_help;exit 1;;
             ?)
-                syslog "option '-$OPTARG' is invalid.";exit 1;;
+                syslog "option '-$OPTARG' is invalid.";main_help;exit 1;;
             *)
-                syslog "...";;
+                syslog "...";main_help;;
         esac
     done
     [ "$debug" == 1 ] && { force=;set -x; }
@@ -248,6 +267,7 @@ main_init()
     [ -n "$clean" -a -n "$init" ] && utils_clean
     [ -n "$init" ] && utils_init
     [ -n "$update" ] && utils_update
+    [ -n "$init" -o -n "$update" ] || main_help
 }    
 
 utils_clean()
