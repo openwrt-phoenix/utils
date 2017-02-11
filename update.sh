@@ -66,9 +66,11 @@ trans_branch()
             o=14.07;;
         c|cc)
             o=15.05;;
+        d|dd)
+            o=17.01;;
         m|mm)
             o=master;;
-        12.09|14.07|15.05|master)
+        12.09|14.07|15.05|17.01|master)
             o=$1;;
         *)
             o='';;
@@ -92,6 +94,8 @@ check_options()
     elif [ "$vender" == "lede" ];then
         [ "$branch" == "" ] && return 0
         case "$branch" in
+            17.01)
+                ;;
             master)
                 ;;
             *)
@@ -115,7 +119,14 @@ trans_branch2()
     [ $1 == oldpackages ] && o=master
     [ $1 == utils ] && o=master
     [ $2 == master ] && o=master
-    [ -n "$o" ] || o=for-$2
+    if [ -z "$o" ]; then
+        case $2 in
+            17.01)
+                o=lede-$2;;
+            *)
+                o=for-$2;;
+        esac
+    fi
     echo -n $o
 }
 
