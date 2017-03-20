@@ -51,7 +51,7 @@ get_branchs()
         openwrt)
             o="14.07 15.05 master";;
         lede)
-            o="master";;
+            o="17.01 master";;
         *)
             o="";;
     esac
