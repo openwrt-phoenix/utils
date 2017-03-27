@@ -32,7 +32,7 @@ our @commitlist = ({
             "luci"        => "e11b5e49f894af7f63ade77d06b87177249c8649",
             "routing"     => "e26942118bced52ead0ce753f3c9d931436110b0",
             "telephony"   => "608a59a693e8b0b1edeed6079196745bfcab6c7e",
-            "newpackages" => ""
+            "newpackages" => "c22aa6a8437199a6ad35e6f3fc657104e8c653f1"
         }
     },{
         "name" => "17.01",
@@ -43,7 +43,7 @@ our @commitlist = ({
             "luci"        => "44bf3f0c1640040561306caff39f34ac916b4357",
             "routing"     => "eca18c2d621c18fed127680cfae5ed953771dcc2",
             "telephony"   => "1f0fb2538ba6fc306198fe2a9a4b976d63adb304",
-            "newpackages" => ""
+            "newpackages" => "c22aa6a8437199a6ad35e6f3fc657104e8c653f1"
         }
     },{
         "name" => "17.01.0-rc1",
@@ -54,7 +54,7 @@ our @commitlist = ({
             "luci"        => "472dc4b9e2ca71c114f5da70cb612c1089b8daa7",
             "routing"     => "a6c7413594a0e4b42dab42bb5fa68534e39b7d0c",
             "telephony"   => "1f0fb2538ba6fc306198fe2a9a4b976d63adb304",
-            "newpackages" => ""
+            "newpackages" => "c22aa6a8437199a6ad35e6f3fc657104e8c653f1"
         }
     },{
         "name" => "17.01.0-rc2",
@@ -65,7 +65,7 @@ our @commitlist = ({
             "luci"        => "e306ee6c93c1ef600012f47e40dd75020d4ab555",
             "routing"     => "dd36dd47bbd75defcb3c517cafe7a19ee425f0af",
             "telephony"   => "1f0fb2538ba6fc306198fe2a9a4b976d63adb304",
-            "newpackages" => ""
+            "newpackages" => "c22aa6a8437199a6ad35e6f3fc657104e8c653f1"
         }
     },{
         "name" => "17.01.0",
@@ -76,7 +76,7 @@ our @commitlist = ({
             "luci"        => "a100738163585ae1edc24d832ca9bef1f34beef0",
             "routing"     => "dd36dd47bbd75defcb3c517cafe7a19ee425f0af",
             "telephony"   => "1f0fb2538ba6fc306198fe2a9a4b976d63adb304",
-            "newpackages" => ""
+            "newpackages" => "c22aa6a8437199a6ad35e6f3fc657104e8c653f1"
         }
     }
 );
@@ -84,7 +84,7 @@ our @commitlist = ({
 our %mirrorlist = (
     "github" => {
         "lede"        => "https://github.com/lede-project/source.git",
-        "openwrt"     => "https://git.lede-project.org/openwrt/source.git",
+        "openwrt"     => "https://github.com/speadup/openwrt.git",
         "packages"    => "https://github.com/openwrt/packages.git",
         "luci"        => "https://github.com/openwrt/luci.git",
         "routing"     => "https://github.com/openwrt-routing/packages.git",
@@ -463,6 +463,7 @@ sub init_drop_shell {
 sub build_symlink_tree {
     my $destdir = shift @_;
     shell_exec("mkdir -p $destdir") unless -d $destdir;
+    shell_exec("mkdir -p $destdir/tmp");
     shell_exec("ln -sf ../../feeds ./openwrt/package/");
     shell_exec("ln -sf ../openwrt/BSDmakefile $destdir/");
     shell_exec("ln -sf ../openwrt/config $destdir/");
@@ -595,6 +596,9 @@ sub cmd_init {
         my $savepoint = git_head(); 
         syslog("savepoint -> %s", $savepoint);
         foreach my $remote (@remotelist) {
+            if($pull eq "14.07" and $remote eq "newpackages") {
+                next;
+            }
             syslog("remote -> %s", $remote);
             my $prefix = init_get_remote_prefix($remote);
             my $remote2 = init_get_remote_name($remote, "$pull.1", 0);
@@ -614,7 +618,7 @@ sub cmd_init {
             $ok = git_fetch($remote);
             last if $ok;
 
-            $ENV{"GIT_EDITOR"} = "sed -i \"s@\\(Merge commit '[a-f0-9]*'\\).*@\\1 as '$prefix' for 'pull $pull'@\"";
+            $ENV{"GIT_EDITOR"} = "sed -i \"s@\\(Merge commit '[a-f0-9]*'\\).*@\\1 as '$prefix' for '$pull+'@\"";
             if(-d $prefix) {
                 $ok = git_subtree_pull($prefix, $remote, $branch2);
                 if($ok) {
@@ -663,7 +667,7 @@ sub cmd_build {
     $user = "compile" unless $user;
     $domain = "ntcmd.net" unless $domain;
     $jobs = get_sys_processors() unless $jobs;
-    my $opt = "";
+    my $opt = "@ARGV";
     $opt = "$opt V=99" if $verbose;
     if(not $config) {
         syslog("no config is specified!");
@@ -831,6 +835,31 @@ sub cmd_checklog {
         system("vim $e");
     }
 }
+
+sub cmd_checklog2 {
+    my ($log, $edit) = (0) x 2;
+    my ($destdir) = ("") x 1;
+    GetOptions(
+        "log|l"    => \$log,
+        "destdir|d=s" => \$destdir
+    );
+    if($log and $edit) {
+        syslog("--log|-l can not with --edit|-e !");
+        return 0;
+    }
+    $destdir = "build" unless $destdir;
+    my $text = qx(grep -E '\\*\\*\\* \\[' -r build/logs/ | awk -F: '{print \$1}');
+    print $text;
+    $text =~ s/\n/ /g;
+    if(not $text) {
+        syslog("no error!");
+        return 0;
+    }
+    if($log) {
+        system("vim $text");
+    }
+}
+
 
 sub main {
     my $cmd = shift @ARGV;
