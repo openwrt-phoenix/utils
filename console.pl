@@ -756,10 +756,14 @@ sub cmd_defconfig {
     }
 
     build_symlink_tree($destdir);
-    shell_exec("rm -f $destdir/.config");
+    if(-f $config) {
+        shell_exec("cp -f $config $destdir/.config");
+    } else {
+        shell_exec("rm -f $destdir/.config");
+    }
     shell_exec("make -C $destdir menuconfig");
     shell_exec("make -C $destdir oldconfig");
-    shell_exec("cd $destdir; ./scripts/diffconfig.sh");
+    shell_exec("cd $destdir; ./scripts/diffconfig.sh | tee ./tmp/.defconfig.tmp");
 }
 
 sub cmd_diffconfig {
@@ -790,7 +794,7 @@ sub cmd_diffconfig {
     build_symlink_tree($destdir);
     shell_exec("make -C $destdir defconfig") unless -f "openwrt/scripts/config/conf";
     shell_exec("cp -f $config $destdir/.config");
-    shell_exec("cd $destdir; ./scripts/diffconfig.sh");
+    shell_exec("cd $destdir; ./scripts/diffconfig.sh | tee ./tmp/.diffconfig.tmp");
 }
 
 sub cmd_checklog {
