@@ -78,6 +78,18 @@ our @commitlist = ({
             "telephony"   => "1f0fb2538ba6fc306198fe2a9a4b976d63adb304",
             "newpackages" => "c22aa6a8437199a6ad35e6f3fc657104e8c653f1"
         }
+    },{
+        "name" => "17.01.1",
+        "type" => "tag",
+        "dict" => {
+            "openwrt"     => "7eb58cf1090a6a0912c5cbdfd023555096a20cf3",
+            "packages"    => "f9e99848182fc7bc554e541ca133c22079d4041b",
+            "luci"        => "29fabe26399fbaecf9231e24f9ac1ee5773cafa6",
+            "routing"     => "04a37ef4309c2b67c64901eb8fbf3800b4c7bb35",
+            "telephony"   => "1f0fb2538ba6fc306198fe2a9a4b976d63adb304",
+            "newpackages" => "37d5da16f65d62d90c7d38ba19ab31d240f7d6eb"
+        }
+
     }
 );
 
@@ -730,7 +742,7 @@ sub cmd_build {
 
     syslog("--------------------------------------------");
     my $t1 = time();
-    shell_exec("make  -C $destdir oldconfig");
+    shell_exec("yes '' | make  -C $destdir oldconfig >/dev/null");
     shell_exec("make  -C $destdir -j $jobs $opt");
     my $t2 = time();
     syslog("--------------------------------------------");
@@ -762,8 +774,8 @@ sub cmd_defconfig {
         shell_exec("rm -f $destdir/.config");
     }
     shell_exec("make -C $destdir menuconfig");
-    shell_exec("make -C $destdir oldconfig");
-    shell_exec("cd $destdir; ./scripts/diffconfig.sh | tee ./tmp/.defconfig.tmp");
+    shell_exec("yes '' | make -C $destdir oldconfig >/dev/null");
+    shell_exec("cd $destdir; ./scripts/diffconfig.sh | tee ./defconfig-" . strftime("%Y%m%d%H%M%S",localtime()));
 }
 
 sub cmd_diffconfig {
@@ -794,7 +806,7 @@ sub cmd_diffconfig {
     build_symlink_tree($destdir);
     shell_exec("make -C $destdir defconfig") unless -f "openwrt/scripts/config/conf";
     shell_exec("cp -f $config $destdir/.config");
-    shell_exec("cd $destdir; ./scripts/diffconfig.sh | tee ./tmp/.diffconfig.tmp");
+    shell_exec("cd $destdir; ./scripts/diffconfig.sh | tee ./diffconfig-" . strftime("%Y%m%d%H%M%S",localtime()));
 }
 
 sub cmd_checklog {
