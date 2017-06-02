@@ -337,7 +337,7 @@ sub git_add {
 
 sub git_fetch {
     my ($remote) = @_;
-    my $cmd = "git fetch '$remote'";
+    my $cmd = "git fetch -t '$remote'";
     syslog($cmd);
     system($cmd);
     return $? >> 8;
