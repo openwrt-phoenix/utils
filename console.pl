@@ -524,9 +524,9 @@ sub cmd_init {
     git_config("merge.renameLimit", 65536);
     if(not git_head()) { 
         mkdir("defconfig");
-        file_write(".gitignore", "*.o\n*.orig\n*.rej\n*.swp\n*.log\n.tags\n/build");    
-        file_write("README.md", "");    
-        file_write("defconfig/.gitignore", "");
+        file_write(".gitignore", "*.o\n*.orig\n*.rej\n*.swp\n*.log\n.tags\n/build\n/download\n/downloads\n/release\n");
+        file_write("README.md", "\n");
+        file_write("defconfig/.gitignore", "\n");
         git_add(".gitignore README.md defconfig/.gitignore");
         git_commit(0, "Initialization repository")
     }
